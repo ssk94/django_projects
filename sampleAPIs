@@ -1,1 +1,23 @@
+#Adding Roles like admin, user, etc
 
+class AddRoleView(APIView):
+    permission_classes = (AllowAny,)
+    def post(self, request):
+        if not check_permission(request, ['add_role']):
+            return JsonResponse({'messsage':'You are Not Allowed To do this operation', 'status':False}, status=401)
+        if request.data:
+            serializer = AddRoleSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse({'message':'Role Added Successfully'}, status=200)
+            return Response(serializer.errors)
+        return JsonResponse({'message':'Bad Request'}, status=400)
+
+    def get(self,request):
+        if not check_permission(request, ['add_role', 'edit_role', 'view_role']):
+            return JsonResponse({'messsage':'You are Not Allowed To do this operation', 'status':False}, status=401)
+        roles = RoleTypes.objects.all()
+        serializer = AddRoleSerializer(roles, many=True)
+        return Response(serializer.data)
+        
+#Add Roles Api Ends
