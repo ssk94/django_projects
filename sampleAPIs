@@ -21,3 +21,246 @@ class AddRoleView(APIView):
         return Response(serializer.data)
         
 #Add Roles Api Ends
+
+
+#Some CRUD APIs
+
+class QuoteLatest(APIView):
+
+    def get(self, request):
+        latestQuote = [quote_model.objects.latest('timestamp')]
+        quoteData = quote_serializer(latestQuote, many = True)
+        return JsonResponse({'Quote': quoteData.data}, status=201)
+
+# quote CRUD view operations starts
+class quoteGetView(generics.ListAPIView):
+    queryset = quote_model.objects.all().order_by('-id')
+    serializer_class = quote_serializer
+
+class quotePostView(generics.CreateAPIView):
+    queryset = quote_model.objects.all()
+    serializer_class = quote_serializer
+
+class quoteRUDView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = quote_model.objects.all()
+    serializer_class = quote_serializer
+# quote CRUD view operations END
+
+
+
+class MobileTestimonial(APIView):
+
+    def get(self, request):
+        testi = [testimonial_model.objects.latest('date')]
+        testi_data = testimonial_serializer(testi, many=True)
+        return JsonResponse({'testimonial': testi_data.data}, status=201)
+
+
+
+# testimonial CRUD view starts
+class TestiGetView(generics.ListAPIView):
+    queryset = testimonial_model.objects.all().order_by('-id')
+    serializer_class = testimonial_serializer
+
+class TestiPostView(generics.CreateAPIView):
+    queryset = testimonial_model.objects.all()
+    serializer_class = testimonial_serializer
+
+class TestiRUDView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = testimonial_model.objects.all()
+    serializer_class = testimonial_serializer 
+# testimonial view ends here
+
+
+# question CRUD view starts
+class questiongetView(generics.ListAPIView):
+    queryset = QuestionModel.objects.all().order_by('-id')
+    serializer_class = QuestionSerializerforGet
+
+class questionpostView(generics.CreateAPIView):
+    queryset = QuestionModel.objects.all()
+    serializer_class = QuestionSerializerforPost
+
+class questionRUD(generics.RetrieveUpdateDestroyAPIView):
+    queryset = QuestionModel.objects.all()
+    serializer_class = QuestionSerializerforPost    
+# question view ends
+
+#CRUD APIs ends
+
+
+
+
+#AWS upload / download videos, images / CRUD
+# video API
+class file_upload_view_forVideo(APIView):
+    def get(self,request):
+        data_model = file_model.objects.filter(key__startswith='video/').order_by('-id')
+        ser_data  = file_serializer(data_model,many=True)
+        return JsonResponse({'file_data':ser_data.data},status=200)
+
+    def post(self,request):
+        serializer_value = file_serializer(data=request.data)
+        if serializer_value.is_valid():
+            file_object = request.FILES.get('file')
+            fname = str(file_object)
+            var = serializer_value.save()
+            var.key = 'video/'+fname
+            key = var.key
+            var.save()
+
+            aws_id = ""
+            aws_secret = ""
+            BUCKET_NAME = ""
+
+            s3 = boto3.client(
+                's3',
+                aws_access_key_id=aws_id,
+                aws_secret_access_key=aws_secret
+            )
+            try:
+                s3.upload_fileobj(file_object, BUCKET_NAME, key, ExtraArgs={'ContentType':'application/image'})
+            except(Exception)as e:
+                print(e, '----------------')
+            
+            return JsonResponse({'message':'File uploaded'},status=201)
+        else:
+            return JsonResponse({'message':'Bad Request'},status=400)    
+
+
+# DELETE ON VIDEO
+class videoDelteView(generics.DestroyAPIView):
+    queryset = file_model.objects.all()
+    serializer_class = file_serializer
+# end of video upload API
+
+
+# Image API
+class file_upload_view_forImage(APIView):
+    def get(self,request):
+        data_model = file_model.objects.filter(key__startswith='image/').order_by('-id')
+        ser_data  = file_serializerAudioImage(data_model,many=True)
+        return JsonResponse({'file_data':ser_data.data},status=200)
+
+    def post(self,request):
+        serializer_value = file_serializerAudioImage(data=request.data)
+        if serializer_value.is_valid():
+            file_object = request.FILES.get('file')
+            fname = str(file_object)
+            var = serializer_value.save()
+            var.key = 'image/'+fname
+            key = var.key
+            var.save()
+
+            aws_id = ""
+            aws_secret = ""
+            BUCKET_NAME = ""
+
+            s3 = boto3.client(
+                's3',
+                aws_access_key_id=aws_id,
+                aws_secret_access_key=aws_secret
+            )
+            try:
+                s3.upload_fileobj(file_object, BUCKET_NAME, key, ExtraArgs={'ContentType':'application/image'})
+            except(Exception)as e:
+                print(e, '----------------')
+            
+            return JsonResponse({'message':'File uploaded'},status=201)
+        else:
+            return JsonResponse({'message':'Bad Request'},status=400)    
+
+# DELETE ON IMAGE 
+class imageDeleteView(generics.DestroyAPIView):
+    queryset = file_model.objects.all()
+    serializer_class = file_serializerAudioImage    
+# end of Image API
+
+
+# audio API
+class file_upload_view_forAudio(APIView):
+    def get(self,request):
+        data_model = file_model.objects.filter(key__startswith='audio/').order_by('-id')
+        ser_data  = file_serializerAudioImage(data_model,many=True)
+        return JsonResponse({'file_data':ser_data.data},status=200)
+
+    def post(self,request):
+        serializer_value = file_serializerAudioImage(data=request.data)
+        if serializer_value.is_valid():
+            file_object = request.FILES.get('file')
+            fname = str(file_object)
+            var = serializer_value.save()
+            var.key = 'audio/'+fname
+            key = var.key
+            var.save()
+
+            aws_id = ""
+            aws_secret = ""
+            BUCKET_NAME = ""
+
+            s3 = boto3.client(
+                's3',
+                aws_access_key_id=aws_id,
+                aws_secret_access_key=aws_secret
+            )
+            try:
+                s3.upload_fileobj(file_object, BUCKET_NAME, key, ExtraArgs={'ContentType':'application/image'})
+            except(Exception)as e:
+                print(e, '----------------')
+            
+            return JsonResponse({'message':'File uploaded'},status=201)
+        else:
+            return JsonResponse({'message':'Bad Request'},status=400)    
+
+
+
+# DELETE ON AUDIO 
+class audioDeleteView(generics.DestroyAPIView):
+    queryset = file_model.objects.all()
+    serializer_class = file_serializerAudioImage    
+# end of Audio API
+
+
+
+
+# Oneminute API
+class oneMinuteView(APIView):
+    def get(self, request):
+        one_data = oneinuteModel.objects.all().order_by('-id')
+        serializer = oneMinuteSerializer(one_data,many=True)
+        return JsonResponse({'files':serializer.data},status=200)
+
+    def post(self, request):
+        one_ser_data = oneMinuteSerializer(data=request.data)
+        if one_ser_data.is_valid():
+            file_name = request.FILES.get('file')
+            print(file_name)
+            fnam = str(file_name)
+            temp_var = one_ser_data.save()
+            temp_var.key = 'one/'
+            key = temp_var.key
+            temp_var.save()
+
+            aws_id = ""
+            aws_secret = ""
+            BUCKET_NAME = ""
+
+            s3 = boto3.client(
+                's3',
+                aws_access_key_id=aws_id,
+                aws_secret_access_key=aws_secret
+            )
+            try:
+                s3.upload_fileobj(file_name, BUCKET_NAME, key, ExtraArgs={'ContentType':'application/image'})
+            except(Exception)as e:
+                print(e, 'Error while uploading')
+            return JsonResponse({'message':'file uploaded'},status=201)
+        else:
+            return JsonResponse({'message':'bad request'},status=400)
+
+
+#  DELETE ON ONEMINUTE 
+class oneminuteDeleteView(generics.DestroyAPIView):
+    queryset = oneinuteModel.objects.all()
+    serializer_class = oneMinuteSerializer    
+# end of Oneminute API
